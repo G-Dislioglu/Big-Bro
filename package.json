@@ -2,15 +2,8 @@
   "name": "big-bro",
   "version": "0.1.0",
   "private": true,
-
   "scripts": {
-    "dev": "cd server && npm run dev",
-    "build": "cd client && npm run build",
-    "start": "cd server && npm start",
-    "lint": "echo \"Lint placeholder - add linter later if needed\""
-  },
-
-  "devDependencies": {
-    "concurrently": "^8.2.2"
+    "start": "npm start --prefix server",
+    "build": "npm run build --prefix client"
   }
 }
