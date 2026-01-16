@@ -1,23 +1,10 @@
 import { useState, useEffect } from 'react'
 import './App.css'
-
-interface HealthStatus {
-  status: string;
-  timestamp: string;
-  database: string;
-}
-
-interface Task {
-  id: string;
-  title: string;
-  status: string;
-  created_at: string;
-  updated_at: string;
-}
+import { api, HealthResponse, Task } from './services/api'
 
 function App() {
   const [adminKey, setAdminKey] = useState('')
-  const [health, setHealth] = useState<HealthStatus | null>(null)
+  const [health, setHealth] = useState<HealthResponse | null>(null)
   const [tasks, setTasks] = useState<Task[]>([])
   const [newTaskTitle, setNewTaskTitle] = useState('')
   const [error, setError] = useState('')
@@ -31,8 +18,7 @@ function App() {
 
   const fetchHealth = async () => {
     try {
-      const response = await fetch('/api/health')
-      const data = await response.json()
+      const data = await api.getHealth()
       setHealth(data)
     } catch (err) {
       setError('Failed to fetch health status')
@@ -47,25 +33,15 @@ function App() {
 
     setLoading(true)
     setError('')
+    api.setAdminKey(adminKey)
     
     try {
-      const response = await fetch('/api/auth/whoami', {
-        headers: {
-          'x-admin-key': adminKey
-        }
-      })
-
-      if (response.ok) {
-        setAuthenticated(true)
-        setError('')
-        fetchTasks()
-      } else {
-        const data = await response.json()
-        setError(data.error || 'Authentication failed')
-        setAuthenticated(false)
-      }
-    } catch (err) {
-      setError('Failed to authenticate')
+      await api.checkAuth()
+      setAuthenticated(true)
+      setError('')
+      fetchTasks()
+    } catch (err: any) {
+      setError(err.message || 'Authentication failed')
       setAuthenticated(false)
     } finally {
       setLoading(false)
@@ -79,21 +55,10 @@ function App() {
     setError('')
     
     try {
-      const response = await fetch('/api/tasks', {
-        headers: {
-          'x-admin-key': adminKey
-        }
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setTasks(data.tasks)
-      } else {
-        const data = await response.json()
-        setError(data.error || 'Failed to fetch tasks')
-      }
-    } catch (err) {
-      setError('Failed to fetch tasks')
+      const data = await api.getTasks()
+      setTasks(data.tasks)
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch tasks')
     } finally {
       setLoading(false)
     }
@@ -116,24 +81,11 @@ function App() {
     setError('')
     
     try {
-      const response = await fetch('/api/tasks', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-key': adminKey
-        },
-        body: JSON.stringify({ title: newTaskTitle })
-      })
-
-      if (response.ok) {
-        setNewTaskTitle('')
-        fetchTasks()
-      } else {
-        const data = await response.json()
-        setError(data.error || 'Failed to add task')
-      }
-    } catch (err) {
-      setError('Failed to add task')
+      await api.createTask(newTaskTitle)
+      setNewTaskTitle('')
+      fetchTasks()
+    } catch (err: any) {
+      setError(err.message || 'Failed to add task')
     } finally {
       setLoading(false)
     }
@@ -146,23 +98,10 @@ function App() {
     setError('')
     
     try {
-      const response = await fetch('/api/tasks', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-key': adminKey
-        },
-        body: JSON.stringify({ id: taskId, status: newStatus })
-      })
-
-      if (response.ok) {
-        fetchTasks()
-      } else {
-        const data = await response.json()
-        setError(data.error || 'Failed to update task')
-      }
-    } catch (err) {
-      setError('Failed to update task')
+      await api.updateTask(taskId, { status: newStatus })
+      fetchTasks()
+    } catch (err: any) {
+      setError(err.message || 'Failed to update task')
     } finally {
       setLoading(false)
     }
@@ -180,17 +119,27 @@ function App() {
             <div className="health-info">
               <div className="health-item">
                 <span className="label">Status:</span>
-                <span className={`status ${health.status}`}>{health.status}</span>
-              </div>
-              <div className="health-item">
-                <span className="label">Database:</span>
-                <span className={`status ${health.database === 'connected' ? 'ok' : 'warning'}`}>
-                  {health.database}
+                <span className={`status ${health.ok ? 'ok' : 'error'}`}>
+                  {health.ok ? 'OK' : 'ERROR'}
                 </span>
               </div>
               <div className="health-item">
-                <span className="label">Timestamp:</span>
-                <span className="timestamp">{new Date(health.timestamp).toLocaleString()}</span>
+                <span className="label">Service:</span>
+                <span>{health.service}</span>
+              </div>
+              <div className="health-item">
+                <span className="label">Version:</span>
+                <span>{health.version}</span>
+              </div>
+              <div className="health-item">
+                <span className="label">Database:</span>
+                <span className={`status ${health.db.configured ? (health.db.ok ? 'ok' : 'warning') : 'warning'}`}>
+                  {health.db.configured ? (health.db.ok ? 'Connected' : 'Error') : 'Not Configured'}
+                </span>
+              </div>
+              <div className="health-item">
+                <span className="label">Time:</span>
+                <span className="timestamp">{new Date(health.time).toLocaleString()}</span>
               </div>
             </div>
           ) : (
@@ -264,7 +213,7 @@ function App() {
                         disabled={loading}
                       >
                         <option value="todo">To Do</option>
-                        <option value="in-progress">In Progress</option>
+                        <option value="doing">Doing</option>
                         <option value="done">Done</option>
                       </select>
                     </div>

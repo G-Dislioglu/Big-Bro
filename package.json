@@ -2,8 +2,16 @@
   "name": "big-bro",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "server",
+    "client"
+  ],
   "scripts": {
-    "start": "npm start --prefix server",
-    "build": "npm run build --prefix client"
+    "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "build": "npm run build --prefix client",
+    "start": "node server/src/server.js"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
   }
 }
