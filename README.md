@@ -1,6 +1,8 @@
-# Big-Bro v0.1
+# Big-Bro v0.2
 
 A Railway-ready monolith with Node.js/Express backend and React/TypeScript frontend for task and settings management.
+
+**v0.2 Strategy Lab:** Card-based idea management with links, crossing heuristics, and visual strategy exploration (MVP, no AI yet).
 
 ---
 

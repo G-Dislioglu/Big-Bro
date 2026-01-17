@@ -26,6 +26,40 @@ export interface Setting {
   updated_at: string;
 }
 
+export interface Card {
+  id: string;
+  title: string;
+  type: string;
+  content: string;
+  tags: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CardLink {
+  id: string;
+  from_card_id: string;
+  to_card_id: string;
+  link_type: string;
+  strength: number;
+  note: string;
+  created_at: string;
+  updated_at: string;
+  to_card_title?: string;
+  to_card_type?: string;
+  from_card_title?: string;
+  from_card_type?: string;
+}
+
+export interface CrossingResult {
+  suggestedCards: (Card & { score: number; reason: string })[];
+  suggestedLinks: Omit<CardLink, 'id' | 'created_at' | 'updated_at'>[];
+  mode: string;
+  seedCardIds: string[];
+  goal: string;
+}
+
 class ApiClient {
   private adminKey: string | null = null;
 
@@ -91,6 +125,69 @@ class ApiClient {
     return this.fetchWithAuth('/api/settings', {
       method: 'PUT',
       body: JSON.stringify({ key, value }),
+    });
+  }
+
+  // Card methods
+  async getCards(filters?: { tag?: string; type?: string; status?: string }): Promise<{ cards: Card[] }> {
+    const params = new URLSearchParams();
+    if (filters?.tag) params.append('tag', filters.tag);
+    if (filters?.type) params.append('type', filters.type);
+    if (filters?.status) params.append('status', filters.status);
+    const query = params.toString() ? `?${params.toString()}` : '';
+    return this.fetchWithAuth(`/api/cards${query}`);
+  }
+
+  async createCard(card: { title: string; type?: string; content?: string; tags?: string; status?: string }): Promise<{ card: Card }> {
+    return this.fetchWithAuth('/api/cards', {
+      method: 'POST',
+      body: JSON.stringify(card),
+    });
+  }
+
+  async updateCard(id: string, updates: Partial<Card>): Promise<{ card: Card }> {
+    return this.fetchWithAuth(`/api/cards/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    });
+  }
+
+  async deleteCard(id: string): Promise<{ card: Card }> {
+    return this.fetchWithAuth(`/api/cards/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getCardLinks(cardId: string): Promise<{ outgoing: CardLink[]; incoming: CardLink[] }> {
+    return this.fetchWithAuth(`/api/cards/${cardId}/links`);
+  }
+
+  // Card link methods
+  async createCardLink(link: { from_card_id: string; to_card_id: string; link_type?: string; strength?: number; note?: string }): Promise<{ link: CardLink }> {
+    return this.fetchWithAuth('/api/card-links', {
+      method: 'POST',
+      body: JSON.stringify(link),
+    });
+  }
+
+  async updateCardLink(id: string, updates: Partial<CardLink>): Promise<{ link: CardLink }> {
+    return this.fetchWithAuth(`/api/card-links/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    });
+  }
+
+  async deleteCardLink(id: string): Promise<{ link: CardLink }> {
+    return this.fetchWithAuth(`/api/card-links/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Crossing methods
+  async runCrossing(params: { seedCardIds: string[]; goal?: string; mode: 'bridge' | 'critique' | 'combine' }): Promise<CrossingResult> {
+    return this.fetchWithAuth('/api/crossing/run', {
+      method: 'POST',
+      body: JSON.stringify(params),
     });
   }
 }

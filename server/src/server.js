@@ -12,6 +12,9 @@ const healthRouter = require('./routes/health');
 const authRouter = require('./routes/auth');
 const settingsRouter = require('./routes/settings');
 const tasksRouter = require('./routes/tasks');
+const cardsRouter = require('./routes/cards');
+const cardLinksRouter = require('./routes/card-links');
+const crossingRouter = require('./routes/crossing');
 
 const app = express();
 
@@ -37,6 +40,9 @@ app.use('/api/health', healthRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/settings', settingsRouter);
 app.use('/api/tasks', tasksRouter);
+app.use('/api/cards', cardsRouter);
+app.use('/api/card-links', cardLinksRouter);
+app.use('/api/crossing', crossingRouter);
 
 // Serve static files from client/dist in production
 const clientDistPath = path.join(__dirname, '../../client/dist');
