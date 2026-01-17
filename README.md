@@ -1,6 +1,8 @@
-# Big-Bro v0.1
+# Big-Bro v0.2
 
 A Railway-ready monolith with Node.js/Express backend and React/TypeScript frontend for task and settings management.
+
+**v0.2 Strategy Lab:** Card-based idea management with links, crossing heuristics, and visual strategy exploration (MVP, no AI yet).
 
 ---
 
@@ -163,8 +165,14 @@ CREATE TABLE tasks (
 
 ---
 
+## Copilot Agent Reporting
+
+- Agents MUST include an `## AGENT REPORT` section in the PR description.
+- A copy of the same report must be committed to `docs/agent-reports/<PR-or-task-id>-report.md` (e.g. `docs/agent-reports/pr-4-report.md`).
+- Keep reports short and free of secrets. Follow the template in `.github/copilot-instructions.md`.
+
+---
+
 ## License
 
 Private - © 2024
-
- 
