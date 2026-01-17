@@ -357,6 +357,11 @@ h1 {
   border-radius: 4px;
 }
 
+.create-link-form button {
+  padding: 8px 16px;
+  white-space: nowrap;
+}
+
 /* Crossing */
 .crossing-buttons {
   display: flex;

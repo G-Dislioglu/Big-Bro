@@ -22,6 +22,9 @@ function App() {
   const [editingCard, setEditingCard] = useState<Partial<Card> | null>(null)
   const [crossingResult, setCrossingResult] = useState<CrossingResult | null>(null)
   const [showCrossing, setShowCrossing] = useState(false)
+  const [newLinkTarget, setNewLinkTarget] = useState('')
+  const [newLinkType, setNewLinkType] = useState('related')
+  const [newLinkStrength, setNewLinkStrength] = useState(3)
 
   // Check health on mount
   useEffect(() => {
@@ -199,8 +202,8 @@ function App() {
     }
   }
 
-  const createLink = async (toCardId: string, linkType: string, strength: number) => {
-    if (!selectedCard) return
+  const createLink = async () => {
+    if (!selectedCard || !newLinkTarget) return
     
     setLoading(true)
     setError('')
@@ -208,13 +211,16 @@ function App() {
     try {
       await api.createCardLink({
         from_card_id: selectedCard.id,
-        to_card_id: toCardId,
-        link_type: linkType,
-        strength,
+        to_card_id: newLinkTarget,
+        link_type: newLinkType,
+        strength: newLinkStrength,
         note: ''
       })
       const links = await api.getCardLinks(selectedCard.id)
       setCardLinks(links)
+      setNewLinkTarget('')
+      setNewLinkType('related')
+      setNewLinkStrength(3)
     } catch (err: any) {
       setError(err.message || 'Failed to create link')
     } finally {
@@ -260,12 +266,14 @@ function App() {
     }
   }
 
-  const approveSuggestedCard = async (card: Card) => {
+  const approveSuggestedCard = async (card: Card & { score?: number; reason?: string }) => {
     setLoading(true)
     setError('')
     
     try {
-      await api.createCard(card)
+      // Remove extra properties before sending to API
+      const { score, reason, ...cardData } = card
+      await api.createCard(cardData)
       fetchCards()
       setShowCrossing(false)
       setCrossingResult(null)
@@ -311,7 +319,7 @@ function App() {
   })
 
   useEffect(() => {
-    if (authenticated && filterType !== undefined || filterStatus !== undefined) {
+    if (authenticated && (filterType !== '' || filterStatus !== '')) {
       fetchCards()
     }
   }, [filterType, filterStatus])
@@ -586,30 +594,26 @@ function App() {
 
                   <h3>Create New Link</h3>
                   <div className="create-link-form">
-                    <select id="link-to-card" onChange={(e) => {
-                      const toCardId = e.target.value;
-                      const linkType = (document.getElementById('link-type') as HTMLSelectElement).value;
-                      const strength = parseInt((document.getElementById('link-strength') as HTMLSelectElement).value);
-                      if (toCardId) createLink(toCardId, linkType, strength);
-                    }}>
+                    <select value={newLinkTarget} onChange={(e) => setNewLinkTarget(e.target.value)}>
                       <option value="">Select target card...</option>
                       {cards.filter(c => c.id !== selectedCard.id).map(c => (
                         <option key={c.id} value={c.id}>{c.title} ({c.type})</option>
                       ))}
                     </select>
-                    <select id="link-type" defaultValue="related">
+                    <select value={newLinkType} onChange={(e) => setNewLinkType(e.target.value)}>
                       <option value="supports">Supports</option>
                       <option value="contradicts">Contradicts</option>
                       <option value="bridges">Bridges</option>
                       <option value="related">Related</option>
                     </select>
-                    <select id="link-strength" defaultValue="3">
+                    <select value={newLinkStrength} onChange={(e) => setNewLinkStrength(parseInt(e.target.value))}>
                       <option value="1">1</option>
                       <option value="2">2</option>
                       <option value="3">3</option>
                       <option value="4">4</option>
                       <option value="5">5</option>
                     </select>
+                    <button onClick={createLink} disabled={!newLinkTarget || loading}>Create Link</button>
                   </div>
 
                   <h3>Crossing Heuristic</h3>

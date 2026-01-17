@@ -40,7 +40,7 @@ router.post('/run', requireAuth, requireDb, async (req, res, next) => {
       .map(tag => tag.trim().toLowerCase())
       .filter(tag => tag.length > 0);
     
-    const uniqueTags = [...new Set(allTags)];
+    const uniqueTags = Array.from(new Set(allTags));
     
     // Collect all types from seed cards
     const seedTypes = [...new Set(seedCards.map(card => card.type))];

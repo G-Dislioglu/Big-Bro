@@ -25,6 +25,7 @@ router.get('/', requireAuth, requireDb, async (req, res, next) => {
     }
     
     if (tag) {
+      // Note: tags stored as comma-separated text, LIKE performs substring match
       query += ` AND tags LIKE $${paramCount++}`;
       params.push(`%${tag}%`);
     }
