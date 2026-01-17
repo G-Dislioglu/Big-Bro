@@ -19,7 +19,7 @@ router.get('/', async (req, res) => {
   res.json({ 
     ok: true,
     service: 'big-bro',
-    version: '0.1.0',
+    version: '0.2.0',
     time: new Date().toISOString(),
     db: dbStatus
   });

@@ -182,3 +182,225 @@ h1 {
     width: 100%;
   }
 }
+
+/* View Selector */
+.view-selector {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.view-selector button {
+  padding: 10px 24px;
+  border: 1px solid #ccc;
+  background-color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.view-selector button.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.view-selector button:hover {
+  background-color: #f8f9fa;
+}
+
+.view-selector button.active:hover {
+  background-color: #0056b3;
+}
+
+/* Strategy Lab - Cards */
+.card-filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 200px;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.card-item {
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.card-item:hover {
+  border-color: #007bff;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+}
+
+.card-item.selected {
+  border-color: #007bff;
+  background-color: #e7f3ff;
+}
+
+.card-item h3 {
+  margin: 0 0 8px 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.card-meta {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  background-color: #6c757d;
+  color: white;
+}
+
+.card-tags {
+  margin: 8px 0;
+  color: #666;
+  font-size: 12px;
+}
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.card-actions button {
+  padding: 4px 12px;
+  font-size: 12px;
+}
+
+/* Card Editor */
+.card-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card-editor input,
+.card-editor select,
+.card-editor textarea {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.card-editor textarea {
+  resize: vertical;
+}
+
+.card-editor-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* Links Section */
+.links-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.links-section h3 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.link-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  border-left: 3px solid #6c757d;
+}
+
+.link-item button {
+  padding: 4px 12px;
+  font-size: 12px;
+}
+
+.create-link-form {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.create-link-form select {
+  flex: 1;
+  min-width: 150px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.create-link-form button {
+  padding: 8px 16px;
+  white-space: nowrap;
+}
+
+/* Crossing */
+.crossing-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.close-crossing {
+  float: right;
+  padding: 6px 16px;
+}
+
+.suggestion-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background-color: #fff3cd;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  border-left: 3px solid #ffc107;
+}
+
+.suggestion-item strong {
+  color: #333;
+}
+
+.suggestion-item p {
+  margin: 4px 0 0 0;
+  color: #666;
+  font-size: 13px;
+}
+
+.suggestion-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.suggestion-actions button {
+  padding: 6px 16px;
+  font-size: 13px;
+}

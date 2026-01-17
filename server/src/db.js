@@ -36,6 +36,44 @@ async function ensureSchema() {
       )
     `);
     
+    // Create cards table for Strategy Lab
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS cards (
+        id UUID PRIMARY KEY,
+        title TEXT NOT NULL,
+        type TEXT NOT NULL DEFAULT 'idea',
+        content TEXT,
+        tags TEXT,
+        status TEXT NOT NULL DEFAULT 'draft',
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `);
+    
+    // Create card_links table for Strategy Lab
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS card_links (
+        id UUID PRIMARY KEY,
+        from_card_id UUID NOT NULL REFERENCES cards(id) ON DELETE CASCADE,
+        to_card_id UUID NOT NULL REFERENCES cards(id) ON DELETE CASCADE,
+        link_type TEXT NOT NULL DEFAULT 'related',
+        strength INT DEFAULT 3 CHECK (strength >= 1 AND strength <= 5),
+        note TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `);
+    
+    // Create card_runs table for Strategy Lab (optional for MVP but included)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS card_runs (
+        id UUID PRIMARY KEY,
+        input JSONB,
+        output JSONB,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `);
+    
     console.log('✓ Database schema initialized');
   } catch (error) {
     console.error('Error initializing database schema:', error);
