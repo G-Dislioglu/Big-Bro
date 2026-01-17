@@ -7,17 +7,10 @@
 - All new server endpoints must enforce Admin-Key auth unless explicitly stated otherwise.
 
 ## Reporting Protocol (MANDATORY for every task/PR you create or update)
-At the end of EVERY task, you MUST produce an "AGENT REPORT" in two places:
+At the end of EVERY task, you MUST produce an "AGENT REPORT" committed to the repo:
 
-A) In the PR DESCRIPTION (append a section):
-   - Title: `## AGENT REPORT`
-   - Use the Report Template below.
-
-B) As a committed markdown file:
-   - Path: `docs/agent-reports/<PR-or-task-id>-report.md`
-   - Same content as in PR description.
-
-If you cannot post PR comments due to permissions, DO NOT stop. Still write the report into the PR description and the markdown file.
+- Create `docs/agent-reports/<PR-or-task-id>-report.md` using the Report Template below. This repo file is the source of truth.
+- Updating the PR description/comment with the same content is optional and must never block completion.
 
 ### Report Template (always use these headings)
 1) Summary (max 8 bullets) – what was implemented/changed

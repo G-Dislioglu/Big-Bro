@@ -4,14 +4,14 @@ This document summarizes the reporting protocol for AI agents working on this re
 
 ## Overview
 
-All AI agents (Copilot, etc.) working on this repository must produce standardized reports for every task or PR they create or update. This ensures consistent documentation and traceability of changes.
+All AI agents (Copilot, etc.) working on this repository must produce standardized reports for every task or PR they create or update. Reports are repository-first and must not rely on PR descriptions.
 
 ## Report Requirements
 
 ### Where Reports Are Produced
 
-1. **PR Description**: Append an `## AGENT REPORT` section using the template
-2. **Committed Markdown File**: Create `docs/agent-reports/<PR-or-task-id>-report.md` with identical content
+1. **Committed Markdown File (mandatory)**: `docs/agent-reports/<PR-or-task-id>-report.md` (source of truth)
+2. **PR Description/Comment (optional)**: May mirror the report but must never block completion
 
 ### Report Template Structure
 
@@ -50,9 +50,3 @@ docs/agent-reports/<PR-or-task-id>-report.md
 ## Reference
 
 For complete details, see [.github/copilot-instructions.md](../.github/copilot-instructions.md)
-
-## Enforcement
-
-If an agent cannot post PR comments due to permissions, it must still:
-- Write the report into the PR description
-- Create the markdown file in docs/agent-reports/
