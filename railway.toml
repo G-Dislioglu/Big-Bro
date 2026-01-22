@@ -6,8 +6,8 @@ $schema = "https://railway.com/railway.schema.json"
 [build]
 # Install all dependencies (root + workspaces) and build client
 builder = "RAILPACK"
-watchPatterns = ["server/**", "client/**", "railway.toml", "nixpacks.toml", "package.json"]
-buildCommand = "npm ci && npm run build"
+watchPatterns = ["server/**", "client/**", "railway.toml", "nixpacks.toml", "package.json", "package-lock.json"]
+buildCommand = "npm ci --include=dev && npm run build"
 
 [deploy]
 # Start the server from root
