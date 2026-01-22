@@ -1,9 +1,12 @@
 # Railway Configuration for Big-Bro Monorepo
 # Ensures consistent builds and deployments
 
+$schema = "https://railway.com/railway.schema.json"
+
 [build]
 # Install all dependencies (root + workspaces) and build client
-builder = "nixpacks"
+builder = "RAILPACK"
+watchPatterns = ["server/**", "client/**", "railway.toml", "nixpacks.toml", "package.json"]
 buildCommand = "npm install --include=dev && npm run build"
 
 [deploy]
