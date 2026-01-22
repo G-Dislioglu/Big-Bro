@@ -15,6 +15,9 @@ async function ensureSchema() {
   if (!db) return;
   
   try {
+    // Enable pgcrypto for gen_random_uuid()
+    await db.query(`CREATE EXTENSION IF NOT EXISTS pgcrypto`);
+    
     // Create settings table
     await db.query(`
       CREATE TABLE IF NOT EXISTS settings (
@@ -73,6 +76,47 @@ async function ensureSchema() {
         created_at TIMESTAMPTZ DEFAULT NOW()
       )
     `);
+    
+    // Create idea_cards table (PR-1: Idea Cards + Links)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS idea_cards (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        title TEXT NOT NULL,
+        body TEXT NOT NULL DEFAULT '',
+        tags TEXT[] NOT NULL DEFAULT '{}',
+        layer TEXT NOT NULL CHECK (layer IN ('Rational', 'Spekulativ', 'Meta')),
+        value_pct INT NOT NULL DEFAULT 50 CHECK (value_pct >= 0 AND value_pct <= 100),
+        status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'tested', 'validated', 'killed')),
+        risk_notes TEXT NOT NULL DEFAULT '',
+        next_steps TEXT NOT NULL DEFAULT '',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+    
+    // Create indexes for idea_cards
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_idea_cards_created_at ON idea_cards(created_at DESC)`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_idea_cards_status ON idea_cards(status)`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_idea_cards_layer ON idea_cards(layer)`);
+    
+    // Create idea_card_links table (PR-1: Idea Cards + Links)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS idea_card_links (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        source_id UUID NOT NULL REFERENCES idea_cards(id) ON DELETE CASCADE,
+        target_id UUID NOT NULL REFERENCES idea_cards(id) ON DELETE CASCADE,
+        type TEXT NOT NULL CHECK (type IN ('supports', 'contradicts', 'depends_on', 'variant_of')),
+        weight INT NOT NULL DEFAULT 50 CHECK (weight >= 0 AND weight <= 100),
+        note TEXT NOT NULL DEFAULT '',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        CONSTRAINT idea_card_links_no_self_link CHECK (source_id <> target_id),
+        CONSTRAINT idea_card_links_unique UNIQUE (source_id, target_id, type)
+      )
+    `);
+    
+    // Create indexes for idea_card_links
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_idea_links_source ON idea_card_links(source_id)`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_idea_links_target ON idea_card_links(target_id)`);
     
     console.log('✓ Database schema initialized');
   } catch (error) {

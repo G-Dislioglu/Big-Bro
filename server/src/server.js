@@ -15,6 +15,8 @@ const tasksRouter = require('./routes/tasks');
 const cardsRouter = require('./routes/cards');
 const cardLinksRouter = require('./routes/card-links');
 const crossingRouter = require('./routes/crossing');
+const ideaCardsRouter = require('./routes/idea-cards');
+const ideaLinksRouter = require('./routes/idea-links');
 
 const app = express();
 
@@ -43,6 +45,8 @@ app.use('/api/tasks', tasksRouter);
 app.use('/api/cards', cardsRouter);
 app.use('/api/card-links', cardLinksRouter);
 app.use('/api/crossing', crossingRouter);
+app.use('/api/idea-cards', ideaCardsRouter);
+app.use('/api/links', ideaLinksRouter);
 
 // Serve static files from client/dist in production
 const clientDistPath = path.join(__dirname, '../../client/dist');
