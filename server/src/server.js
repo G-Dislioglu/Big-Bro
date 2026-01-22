@@ -15,6 +15,7 @@ const tasksRouter = require('./routes/tasks');
 const cardsRouter = require('./routes/cards');
 const cardLinksRouter = require('./routes/card-links');
 const crossingRouter = require('./routes/crossing');
+const buildInfoRouter = require('./routes/build-info');
 const ideaCardsRouter = require('./routes/idea-cards');
 const ideaLinksRouter = require('./routes/idea-links');
 
@@ -39,6 +40,7 @@ app.use('/api/', rateLimitMiddleware);
 
 // API Routes
 app.use('/api/health', healthRouter);
+app.use('/api/build-info', buildInfoRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/settings', settingsRouter);
 app.use('/api/tasks', tasksRouter);
