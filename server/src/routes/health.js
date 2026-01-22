@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const config = require('../config');
 const { db } = require('../db');
+const { version } = require('../../package.json');
 
 router.get('/', async (req, res) => {
   let dbStatus = { configured: config.isDbConfigured };
@@ -19,7 +20,7 @@ router.get('/', async (req, res) => {
   res.json({ 
     ok: true,
     service: 'big-bro',
-    version: '0.2.0',
+    version,
     time: new Date().toISOString(),
     db: dbStatus
   });
