@@ -71,10 +71,19 @@ export interface IdeaCardLink {
   id: string;
   source_id: string;
   target_id: string;
-  type: 'supports' | 'contradicts' | 'depends_on' | 'variant_of';
+  type: 'supports' | 'contradicts' | 'depends_on' | 'variant_of' | 'refines';
   weight: number;
   note: string;
   created_at: string;
+}
+
+export interface CrossingV02Response {
+  ok: true;
+  score: number;
+  thesis: string;
+  steps: string[];
+  risks: string[];
+  next_actions: string[];
 }
 
 export interface CrossingResult {
@@ -274,6 +283,12 @@ class ApiClient {
     return this.fetchWithAuth(`/api/links/by-card/${cardId}`);
   }
 
+  async getIdeaLinksByCardId(cardId: string): Promise<{ ok: boolean; items: IdeaCardLink[] }> {
+    const params = new URLSearchParams();
+    params.append('cardId', cardId);
+    return this.fetchWithAuth(`/api/links?${params.toString()}`);
+  }
+
   async createIdeaCardLink(link: {
     source_id: string;
     target_id: string;
@@ -290,6 +305,14 @@ class ApiClient {
   async deleteIdeaCardLink(id: string): Promise<{ ok: boolean }> {
     return this.fetchWithAuth(`/api/links/${id}`, {
       method: 'DELETE',
+    });
+  }
+
+  // v0.2: Crossing (deterministic, Idea Cards)
+  async runCrossingV02(params: { cardIds: string[]; mode?: 'balanced' | 'creative' | 'critical' }): Promise<CrossingV02Response> {
+    return this.fetchWithAuth('/api/crossing', {
+      method: 'POST',
+      body: JSON.stringify(params),
     });
   }
 }

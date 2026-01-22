@@ -6,7 +6,7 @@ const { db } = require('../db');
 
 // Validation helpers
 const VALID_LAYERS = ['Rational', 'Spekulativ', 'Meta'];
-const VALID_STATUSES = ['draft', 'tested', 'validated', 'killed'];
+const VALID_STATUSES = ['draft', 'active', 'archived', 'tested', 'validated', 'killed'];
 
 function validateCard(data, isPartial = false) {
   const errors = [];
@@ -72,7 +72,7 @@ function cleanTags(tags) {
 }
 
 // GET /api/idea-cards - List cards with filters
-router.get('/', requireAuth, requireDb, async (req, res, next) => {
+router.get('/', requireDb, async (req, res, next) => {
   try {
     const { q, tag, status, layer } = req.query;
     let limit = Math.min(parseInt(req.query.limit, 10) || 50, 200);
@@ -142,7 +142,7 @@ router.post('/', requireAuth, requireDb, async (req, res, next) => {
       title, 
       body = '', 
       tags = [], 
-      layer, 
+      layer = 'Rational', 
       value_pct = 50, 
       status = 'draft',
       risk_notes = '',
@@ -170,7 +170,7 @@ router.post('/', requireAuth, requireDb, async (req, res, next) => {
 });
 
 // GET /api/idea-cards/:id - Get a single card
-router.get('/:id', requireAuth, requireDb, async (req, res, next) => {
+router.get('/:id', requireDb, async (req, res, next) => {
   try {
     const { id } = req.params;
     

@@ -86,13 +86,32 @@ async function ensureSchema() {
         tags TEXT[] NOT NULL DEFAULT '{}',
         layer TEXT NOT NULL CHECK (layer IN ('Rational', 'Spekulativ', 'Meta')),
         value_pct INT NOT NULL DEFAULT 50 CHECK (value_pct >= 0 AND value_pct <= 100),
-        status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'tested', 'validated', 'killed')),
+        status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'active', 'archived', 'tested', 'validated', 'killed')),
         risk_notes TEXT NOT NULL DEFAULT '',
         next_steps TEXT NOT NULL DEFAULT '',
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
     `);
+
+    const statusConstraints = await db.query(
+      `SELECT con.conname
+       FROM pg_constraint con
+       JOIN pg_class rel ON rel.oid = con.conrelid
+       WHERE rel.relname = 'idea_cards' AND con.contype = 'c'`
+    );
+
+    for (const row of statusConstraints.rows) {
+      if (String(row.conname || '').includes('status')) {
+        await db.query(`ALTER TABLE idea_cards DROP CONSTRAINT IF EXISTS ${row.conname}`);
+      }
+    }
+
+    await db.query(
+      `ALTER TABLE idea_cards
+       ADD CONSTRAINT idea_cards_status_check
+       CHECK (status IN ('draft', 'active', 'archived', 'tested', 'validated', 'killed'))`
+    );
     
     // Create indexes for idea_cards
     await db.query(`CREATE INDEX IF NOT EXISTS idx_idea_cards_created_at ON idea_cards(created_at DESC)`);

@@ -5,6 +5,161 @@ const requireAuth = require('../middleware/auth');
 const requireDb = require('../middleware/requireDb');
 const { db } = require('../db');
 
+function clamp(num, min, max) {
+  return Math.max(min, Math.min(max, num));
+}
+
+function normalizeTag(tag) {
+  return String(tag || '').trim().toLowerCase();
+}
+
+function mapIdeaLinkType(type) {
+  if (type === 'variant_of') return 'refines';
+  return type;
+}
+
+function modeToTemplateMode(mode) {
+  if (mode === 'creative') return 'creative';
+  if (mode === 'critical') return 'critical';
+  return 'balanced';
+}
+
+function buildThesis({ mode, aTitle, bTitle, sharedTags }) {
+  const tagsPart = sharedTags.length > 0 ? ` über gemeinsame Tags ${sharedTags.slice(0, 5).join(', ')}` : '';
+  if (mode === 'creative') {
+    return `Erkunde eine neue Verbindung zwischen "${aTitle}" und "${bTitle}"${tagsPart} und formuliere eine unerwartete Kombinationshypothese.`;
+  }
+  if (mode === 'critical') {
+    return `Prüfe kritisch, ob "${aTitle}" und "${bTitle}"${tagsPart} Spannungen oder Widersprüche enthalten, und definiere klare Gegenbeweise.`;
+  }
+  return `Kombiniere "${aTitle}" mit "${bTitle}"${tagsPart} und leite daraus eine umsetzbare Kernaussage ab.`;
+}
+
+function buildSteps(mode) {
+  if (mode === 'creative') {
+    return [
+      'Definiere den kleinsten gemeinsamen Nenner (Problem/Outcome).',
+      'Liste 3 alternative Interpretationen pro Karte.',
+      'Erzeuge 2 Kombinationsvarianten (A→B und B→A).',
+      'Wähle eine Variante und formuliere eine testbare Hypothese.',
+      'Plane einen 24h-MVP-Test mit klarer Metrik.'
+    ];
+  }
+  if (mode === 'critical') {
+    return [
+      'Formuliere die These als falsifizierbare Aussage.',
+      'Identifiziere 2-3 stärkste Gegenargumente.',
+      'Definiere Daten/Belege, die die These widerlegen würden.',
+      'Lege Kontroll- und Risikoindikatoren fest.',
+      'Plane einen Test, der Widersprüche früh sichtbar macht.'
+    ];
+  }
+  return [
+    'Definiere Zielmetrik und Erfolgskriterium.',
+    'Leite gemeinsame Begriffe/Tags in 1-2 Sätzen ab.',
+    'Formuliere eine kombinierte Hypothese (was + warum).',
+    'Plane einen kleinen Experiment-Schritt (MVP).',
+    'Lege die nächsten 2 konkreten Aktionen fest.'
+  ];
+}
+
+function buildRisks(mode) {
+  const base = ['Unklare Zielmetrik', 'Zu viele Annahmen gleichzeitig', 'Datenqualität / Bias'];
+  if (mode === 'creative') return [...base, 'Scope-Creep durch Ideenexplosion', 'Fehlende Validierung'];
+  if (mode === 'critical') return [...base, 'Over-Optimierung auf Worst-Case', 'Handlungsblockade durch Analyse'];
+  return [...base, 'Koordinationsaufwand unterschätzt', 'Unklare Ownership'];
+}
+
+function buildNextActions(mode) {
+  if (mode === 'creative') {
+    return ['Schreibe 3 Hypothesen-Varianten', 'Wähle 1 MVP-Test', 'Definiere Erfolgskriterium', 'Starte den Test'];
+  }
+  if (mode === 'critical') {
+    return ['Liste Gegenbeweise', 'Definiere Stop-Kriterien', 'Plane Validierungstest', 'Review nach 48h'];
+  }
+  return ['Definiere Zielmetrik', 'Schreibe Hypothese', 'Plane MVP', 'Setze 2 ToDos'];
+}
+
+// POST /api/crossing - v0.2 deterministic heuristic (Idea Cards)
+router.post('/', requireAuth, requireDb, async (req, res, next) => {
+  try {
+    const { cardIds = [], mode = 'balanced' } = req.body;
+    const templateMode = modeToTemplateMode(mode);
+
+    if (!Array.isArray(cardIds) || cardIds.length === 0) {
+      return res.status(400).json({ ok: false, error: 'validation_error', details: ['cardIds must be a non-empty array'] });
+    }
+
+    const cardsResult = await db.query(
+      'SELECT id, title, body, tags, status, created_at, updated_at FROM idea_cards WHERE id = ANY($1)',
+      [cardIds]
+    );
+
+    if (cardsResult.rows.length === 0) {
+      return res.status(404).json({ ok: false, error: 'not_found' });
+    }
+
+    const cards = cardsResult.rows;
+
+    const linksResult = await db.query(
+      `SELECT id, source_id, target_id, type, note, created_at
+       FROM idea_card_links
+       WHERE source_id = ANY($1) AND target_id = ANY($1)`,
+      [cardIds]
+    );
+    const links = linksResult.rows.map(l => ({ ...l, type: mapIdeaLinkType(l.type) }));
+
+    // Tag overlap: +20 if any tag appears in at least 2 selected cards
+    const tagCounts = new Map();
+    for (const card of cards) {
+      const tags = Array.isArray(card.tags) ? card.tags : [];
+      for (const rawTag of tags) {
+        const t = normalizeTag(rawTag);
+        if (!t) continue;
+        tagCounts.set(t, (tagCounts.get(t) || 0) + 1);
+      }
+    }
+    const sharedTags = Array.from(tagCounts.entries())
+      .filter(([, c]) => c >= 2)
+      .sort((a, b) => b[1] - a[1])
+      .map(([t]) => t);
+
+    let score = 0;
+    if (sharedTags.length > 0) score += 20;
+
+    // Link scoring
+    for (const link of links) {
+      if (link.type === 'supports') score += 10;
+      else if (link.type === 'contradicts') score -= 15;
+    }
+
+    // Status bonus: +10 if none is archived-like
+    const hasArchivedLike = cards.some(c => ['archived', 'killed'].includes(String(c.status || '').toLowerCase()));
+    if (!hasArchivedLike) score += 10;
+
+    // Text sanity: small bonus if average body length is reasonable
+    const bodies = cards.map(c => String(c.body || ''));
+    const avgLen = bodies.reduce((sum, b) => sum + b.length, 0) / Math.max(1, bodies.length);
+    if (avgLen >= 40 && avgLen <= 2000) score += 5;
+
+    score = clamp(score, 0, 100);
+
+    const aTitle = String(cards[0]?.title || 'Card A');
+    const bTitle = String(cards[1]?.title || cards[0]?.title || 'Card B');
+
+    res.json({
+      ok: true,
+      score,
+      thesis: buildThesis({ mode: templateMode, aTitle, bTitle, sharedTags }),
+      steps: buildSteps(templateMode),
+      risks: buildRisks(templateMode),
+      next_actions: buildNextActions(templateMode)
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // POST /api/crossing/run - Run crossing heuristic
 router.post('/run', requireAuth, requireDb, async (req, res, next) => {
   try {
