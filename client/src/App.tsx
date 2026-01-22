@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 import { api, HealthResponse, Task, Card, CardLink, CrossingResult } from './services/api'
+import { IdeaLab } from './components/IdeaLab'
 
 function App() {
   const [adminKey, setAdminKey] = useState('')
@@ -12,7 +13,7 @@ function App() {
   const [authenticated, setAuthenticated] = useState(false)
   
   // Strategy Lab state
-  const [currentView, setCurrentView] = useState<'tasks' | 'cards'>('tasks')
+  const [currentView, setCurrentView] = useState<'tasks' | 'cards' | 'ideas'>('tasks')
   const [cards, setCards] = useState<Card[]>([])
   const [selectedCard, setSelectedCard] = useState<Card | null>(null)
   const [cardLinks, setCardLinks] = useState<{ outgoing: CardLink[]; incoming: CardLink[] }>({ outgoing: [], incoming: [] })
@@ -400,6 +401,12 @@ function App() {
               >
                 Strategy Lab
               </button>
+              <button 
+                className={currentView === 'ideas' ? 'active' : ''} 
+                onClick={() => setCurrentView('ideas')}
+              >
+                Idea Lab
+              </button>
             </div>
           </div>
         )}
@@ -674,6 +681,11 @@ function App() {
               </div>
             )}
           </>
+        )}
+
+        {/* Idea Lab Section (PR-2) */}
+        {authenticated && currentView === 'ideas' && (
+          <IdeaLab adminKey={adminKey} />
         )}
       </div>
     </div>

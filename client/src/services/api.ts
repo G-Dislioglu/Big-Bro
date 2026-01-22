@@ -52,6 +52,31 @@ export interface CardLink {
   from_card_type?: string;
 }
 
+// PR-1: Idea Cards (new schema)
+export interface IdeaCard {
+  id: string;
+  title: string;
+  body: string;
+  tags: string[];
+  layer: 'Rational' | 'Spekulativ' | 'Meta';
+  value_pct: number;
+  status: 'draft' | 'tested' | 'validated' | 'killed';
+  risk_notes: string;
+  next_steps: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface IdeaCardLink {
+  id: string;
+  source_id: string;
+  target_id: string;
+  type: 'supports' | 'contradicts' | 'depends_on' | 'variant_of';
+  weight: number;
+  note: string;
+  created_at: string;
+}
+
 export interface CrossingResult {
   suggestedCards: (Card & { score: number; reason: string })[];
   suggestedLinks: Omit<CardLink, 'id' | 'created_at' | 'updated_at'>[];
@@ -188,6 +213,83 @@ class ApiClient {
     return this.fetchWithAuth('/api/crossing/run', {
       method: 'POST',
       body: JSON.stringify(params),
+    });
+  }
+
+  // PR-1: Idea Cards methods
+  async getIdeaCards(filters?: { 
+    q?: string; 
+    tag?: string; 
+    status?: string; 
+    layer?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<{ ok: boolean; items: IdeaCard[]; total: number }> {
+    const params = new URLSearchParams();
+    if (filters?.q) params.append('q', filters.q);
+    if (filters?.tag) params.append('tag', filters.tag);
+    if (filters?.status) params.append('status', filters.status);
+    if (filters?.layer) params.append('layer', filters.layer);
+    if (filters?.limit) params.append('limit', filters.limit.toString());
+    if (filters?.offset) params.append('offset', filters.offset.toString());
+    const query = params.toString() ? `?${params.toString()}` : '';
+    return this.fetchWithAuth(`/api/idea-cards${query}`);
+  }
+
+  async getIdeaCard(id: string): Promise<{ ok: boolean; item: IdeaCard }> {
+    return this.fetchWithAuth(`/api/idea-cards/${id}`);
+  }
+
+  async createIdeaCard(card: {
+    title: string;
+    body?: string;
+    tags?: string[];
+    layer: string;
+    value_pct?: number;
+    status?: string;
+    risk_notes?: string;
+    next_steps?: string;
+  }): Promise<{ ok: boolean; item: IdeaCard }> {
+    return this.fetchWithAuth('/api/idea-cards', {
+      method: 'POST',
+      body: JSON.stringify(card),
+    });
+  }
+
+  async updateIdeaCard(id: string, updates: Partial<IdeaCard>): Promise<{ ok: boolean; item: IdeaCard }> {
+    return this.fetchWithAuth(`/api/idea-cards/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    });
+  }
+
+  async deleteIdeaCard(id: string): Promise<{ ok: boolean }> {
+    return this.fetchWithAuth(`/api/idea-cards/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // PR-1: Idea Card Links methods
+  async getIdeaCardLinks(cardId: string): Promise<{ ok: boolean; items: IdeaCardLink[] }> {
+    return this.fetchWithAuth(`/api/links/by-card/${cardId}`);
+  }
+
+  async createIdeaCardLink(link: {
+    source_id: string;
+    target_id: string;
+    type: string;
+    weight?: number;
+    note?: string;
+  }): Promise<{ ok: boolean; item: IdeaCardLink }> {
+    return this.fetchWithAuth('/api/links', {
+      method: 'POST',
+      body: JSON.stringify(link),
+    });
+  }
+
+  async deleteIdeaCardLink(id: string): Promise<{ ok: boolean }> {
+    return this.fetchWithAuth(`/api/links/${id}`, {
+      method: 'DELETE',
     });
   }
 }
