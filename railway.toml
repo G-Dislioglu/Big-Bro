@@ -1,0 +1,17 @@
+# Railway Configuration for Big-Bro Monorepo
+# Ensures consistent builds and deployments
+
+[build]
+# Install all dependencies (root + workspaces) and build client
+builder = "nixpacks"
+buildCommand = "npm ci && npm run build"
+
+[deploy]
+# Start the server from root
+startCommand = "npm start"
+# Healthcheck endpoint for stable deployments
+healthcheckPath = "/api/health"
+healthcheckTimeout = 30
+# Restart policy
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
