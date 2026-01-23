@@ -193,20 +193,20 @@ function App() {
         <div className="card">
           <div className="view-selector">
             <button 
-              className={currentView === 'tasks' ? 'active' : ''} 
+              className={`bg-blue-500 text-white ${currentView === 'tasks' ? 'active' : ''}`} 
               onClick={() => setCurrentView('tasks')}
               disabled={!authenticated}
             >
               Tasks
             </button>
             <button 
-              className={currentView === 'cards' ? 'active' : ''} 
+              className={`bg-blue-500 text-white ${currentView === 'cards' ? 'active' : ''}`} 
               onClick={() => setCurrentView('cards')}
             >
               Strategy Lab
             </button>
             <button 
-              className={currentView === 'ideas' ? 'active' : ''} 
+              className={`bg-blue-500 text-white ${currentView === 'ideas' ? 'active' : ''}`} 
               onClick={() => setCurrentView('ideas')}
               disabled={!authenticated}
             >
