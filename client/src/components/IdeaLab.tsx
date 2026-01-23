@@ -14,6 +14,7 @@ export function IdeaLab({ adminKey }: IdeaLabProps) {
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const canWrite = !!adminKey
   
   // Filters
   const [searchQ, setSearchQ] = useState('')
@@ -38,9 +39,7 @@ export function IdeaLab({ adminKey }: IdeaLabProps) {
   const [newLinkNote, setNewLinkNote] = useState('')
 
   useEffect(() => {
-    if (adminKey) {
-      fetchCards()
-    }
+    fetchCards()
   }, [adminKey, filterStatus, filterLayer, offset])
 
   const fetchCards = async () => {
@@ -132,6 +131,10 @@ export function IdeaLab({ adminKey }: IdeaLabProps) {
   }
 
   const deleteCard = async (id: string) => {
+    if (!canWrite) {
+      setError('Admin-Key nötig')
+      return
+    }
     if (!confirm('Delete this card? All links will also be removed.')) return
     
     setLoading(true)
@@ -151,6 +154,10 @@ export function IdeaLab({ adminKey }: IdeaLabProps) {
   }
 
   const createLink = async () => {
+    if (!canWrite) {
+      setError('Admin-Key nötig')
+      return
+    }
     if (!selectedCard || !newLinkTargetId) {
       setError('Select a target card')
       return
@@ -180,6 +187,10 @@ export function IdeaLab({ adminKey }: IdeaLabProps) {
   }
 
   const deleteLink = async (linkId: string) => {
+    if (!canWrite) {
+      setError('Admin-Key nötig')
+      return
+    }
     setLoading(true)
     setError('')
     try {
@@ -230,8 +241,9 @@ export function IdeaLab({ adminKey }: IdeaLabProps) {
             {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
           <button onClick={handleSearch}>Search</button>
-          <button onClick={() => openEditor()}>New Card</button>
+          <button onClick={() => openEditor()} disabled={!canWrite}>New Card</button>
         </div>
+        {!canWrite && <p className="no-tasks">Read-only mode. Enter Admin-Key to write.</p>}
       </div>
 
       {/* Cards List */}
@@ -262,8 +274,8 @@ export function IdeaLab({ adminKey }: IdeaLabProps) {
                 </div>
               )}
               <div className="idea-card-actions">
-                <button onClick={(e) => { e.stopPropagation(); openEditor(card); }}>Edit</button>
-                <button onClick={(e) => { e.stopPropagation(); deleteCard(card.id); }}>Delete</button>
+                <button onClick={(e) => { e.stopPropagation(); openEditor(card); }} disabled={!canWrite}>Edit</button>
+                <button onClick={(e) => { e.stopPropagation(); deleteCard(card.id); }} disabled={!canWrite}>Delete</button>
               </div>
             </div>
           ))}

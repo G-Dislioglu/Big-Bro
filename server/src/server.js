@@ -1,6 +1,7 @@
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
+const fs = require('fs');
 const path = require('path');
 
 const config = require('./config');
@@ -50,9 +51,13 @@ app.use('/api/crossing', crossingRouter);
 app.use('/api/idea-cards', ideaCardsRouter);
 app.use('/api/links', ideaLinksRouter);
 
-// Serve static files from client/dist in production
-const clientDistPath = path.join(__dirname, '../../client/dist');
-app.use(express.static(clientDistPath));
+const serverPublicPath = path.join(__dirname, '../public');
+const monorepoClientDistPath = path.join(__dirname, '../../client/dist');
+const staticRoot = fs.existsSync(path.join(serverPublicPath, 'index.html'))
+  ? serverPublicPath
+  : monorepoClientDistPath;
+
+app.use(express.static(staticRoot));
 
 // SPA fallback - serve index.html for all non-API routes
 app.get('*', (req, res, next) => {
@@ -61,7 +66,7 @@ app.get('*', (req, res, next) => {
     return next();
   }
   
-  res.sendFile(path.join(clientDistPath, 'index.html'), (err) => {
+  res.sendFile(path.join(staticRoot, 'index.html'), (err) => {
     if (err) {
       res.status(404).send('Application not built. Run npm run build first.');
     }

@@ -5,6 +5,7 @@
   "main": "src/server.js",
   "scripts": {
     "dev": "nodemon src/server.js",
+    "build": "node scripts/build-client-and-copy.js",
     "start": "node src/server.js"
   },
   "dependencies": {

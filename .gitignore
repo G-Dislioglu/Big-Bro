@@ -7,6 +7,8 @@ package-lock.json
 dist/
 build/
 
+server/public/
+
 # Environment variables
 .env
 .env.local
