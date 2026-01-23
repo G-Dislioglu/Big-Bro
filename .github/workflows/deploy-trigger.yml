@@ -1,11 +1,20 @@
 name: Manual Deploy Trigger
-
+ 
 on:
   workflow_dispatch:
-
+    inputs:
+      target_branch:
+        description: "Branch, der Railway Production triggert (meist main)"
+        required: true
+        default: "main"
+      reason:
+        description: "Optionaler Grund (landet in der Trigger-Datei)"
+        required: false
+        default: "manual deploy trigger"
+ 
 permissions:
   contents: write
-
+ 
 jobs:
   trigger:
     runs-on: ubuntu-latest
@@ -13,19 +22,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: main
-
-      - name: Update deploy trigger file
+          ref: ${{ inputs.target_branch }}
+          fetch-depth: 0
+          persist-credentials: true
+ 
+      - name: Update deploy trigger file (inside /server to satisfy Watch Paths)
+        shell: bash
         run: |
-          mkdir -p .deploy
-          date -u +"%Y-%m-%dT%H:%M:%SZ" > .deploy/trigger.txt
-
+          set -euo pipefail
+          mkdir -p server
+          {
+            echo "utc_timestamp=$(date -u +\"%Y-%m-%dT%H:%M:%SZ\")"
+            echo "reason=${{ inputs.reason }}"
+          } > server/.deploy-trigger.txt
+          git add server/.deploy-trigger.txt
+ 
       - name: Commit and push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .deploy/trigger.txt
-          git commit -m "chore: deploy trigger" || exit 0
-          git push
+          git commit -m "chore(deploy): trigger Railway deploy" || exit 0
+          git push origin HEAD:${{ inputs.target_branch }}
