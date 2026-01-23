@@ -200,13 +200,15 @@ function App() {
               Tasks
             </button>
             <button 
-              className={`bg-blue-500 text-white ${currentView === 'cards' ? 'active' : ''}`} 
+              className={currentView === 'cards' ? 'active' : ''} 
+              style={{ backgroundColor: '#3B82F6', color: 'white', padding: '10px 20px', borderRadius: '5px', border: 'none', cursor: 'pointer' }}
               onClick={() => setCurrentView('cards')}
             >
               Strategy Lab
             </button>
             <button 
-              className={`bg-blue-500 text-white ${currentView === 'ideas' ? 'active' : ''}`} 
+              className={currentView === 'ideas' ? 'active' : ''} 
+              style={{ backgroundColor: '#3B82F6', color: 'white', padding: '10px 20px', borderRadius: '5px', border: 'none', cursor: 'pointer' }}
               onClick={() => setCurrentView('ideas')}
               disabled={!authenticated}
             >
