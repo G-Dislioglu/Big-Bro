@@ -138,16 +138,7 @@ router.get('/', requireDb, async (req, res, next) => {
 // POST /api/idea-cards - Create a new card
 router.post('/', requireAuth, requireDb, async (req, res, next) => {
   try {
-    const { 
-      title, 
-      body = '', 
-      tags = [], 
-      layer = 'Rational', 
-      value_pct = 50, 
-      status = 'draft',
-      risk_notes = '',
-      next_steps = ''
-    } = req.body;
+    const { title, body = '', tags = [], layer, value_pct = 50, status = 'draft', risk_notes = '', next_steps = '', type = 'text-note', metadata = {} } = req.body;
     
     const errors = validateCard({ title, layer, status, value_pct, tags });
     if (errors.length > 0) {
@@ -157,10 +148,10 @@ router.post('/', requireAuth, requireDb, async (req, res, next) => {
     const cleanedTags = cleanTags(tags);
     
     const result = await db.query(
-      `INSERT INTO idea_cards (title, body, tags, layer, value_pct, status, risk_notes, next_steps)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      `INSERT INTO idea_cards (title, body, tags, layer, value_pct, status, risk_notes, next_steps, type, metadata)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        RETURNING *`,
-      [title.trim(), body, cleanedTags, layer, parseInt(value_pct, 10), status, risk_notes, next_steps]
+      [title.trim(), body, cleanedTags, layer, parseInt(value_pct, 10), status, risk_notes, next_steps, type, JSON.stringify(metadata)]
     );
     
     res.status(201).json({ ok: true, item: result.rows[0] });

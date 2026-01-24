@@ -362,27 +362,12 @@ h1 {
   white-space: nowrap;
 }
 
-/* Crossing */
-.crossing-buttons {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.close-crossing {
-  float: right;
-  padding: 6px 16px;
-}
-
-.suggestion-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px;
-  background-color: #fff3cd;
-  border-radius: 4px;
-  margin-bottom: 12px;
-  border-left: 3px solid #ffc107;
+/* Idea Lab Cards - Glassmorphism */
+.idea-card-item {
+  background-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
 }
 
 .suggestion-item strong {

@@ -16,6 +16,9 @@ export function IdeaLab({ adminKey }: IdeaLabProps) {
   const [error, setError] = useState('')
   const canWrite = !!adminKey
   
+  const [showImport, setShowImport] = useState(false)
+  const [jsonText, setJsonText] = useState('')
+  
   // Filters
   const [searchQ, setSearchQ] = useState('')
   const [filterTag, setFilterTag] = useState('')
@@ -65,6 +68,33 @@ export function IdeaLab({ adminKey }: IdeaLabProps) {
   const handleSearch = () => {
     setOffset(0)
     fetchCards()
+  }
+
+  const handleImport = async () => {
+    if (!canWrite) {
+      setError('Admin-Key nötig')
+      return
+    }
+    try {
+      const data = JSON.parse(jsonText)
+      if (!Array.isArray(data)) throw new Error('Must be JSON array')
+      for (const item of data) {
+        await api.createIdeaCard({
+          title: item.title,
+          body: item.content || '',
+          tags: item.tags || [],
+          layer: 'Rational',
+          type: item.type || 'text-note',
+          metadata: { position: item.position, connections: item.connections }
+        })
+      }
+      setJsonText('')
+      setShowImport(false)
+      fetchCards()
+      setError('')
+    } catch (err: any) {
+      setError(err.message)
+    }
   }
 
   const selectCard = async (card: IdeaCard) => {
@@ -242,8 +272,21 @@ export function IdeaLab({ adminKey }: IdeaLabProps) {
           </select>
           <button onClick={handleSearch}>Search</button>
           <button onClick={() => openEditor()} disabled={!canWrite}>New Card</button>
+          <button onClick={() => setShowImport(!showImport)}>Import JSON</button>
         </div>
         {!canWrite && <p className="no-tasks">Read-only mode. Enter Admin-Key to write.</p>}
+        {showImport && (
+          <div>
+            <textarea
+              value={jsonText}
+              onChange={(e) => setJsonText(e.target.value)}
+              placeholder="Paste JSON array..."
+              rows={10}
+              style={{ width: '100%', marginTop: '10px' }}
+            />
+            <button onClick={handleImport} style={{ marginTop: '10px' }}>Import</button>
+          </div>
+        )}
       </div>
 
       {/* Cards List */}

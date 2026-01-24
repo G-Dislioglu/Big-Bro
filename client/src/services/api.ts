@@ -60,9 +60,11 @@ export interface IdeaCard {
   tags: string[];
   layer: 'Rational' | 'Spekulativ' | 'Meta';
   value_pct: number;
-  status: 'draft' | 'tested' | 'validated' | 'killed';
+  status: 'draft' | 'tested' | 'validated' | 'killed' | 'active' | 'archived';
   risk_notes: string;
   next_steps: string;
+  type: string;
+  metadata: any;
   created_at: string;
   updated_at: string;
 }
@@ -258,6 +260,8 @@ class ApiClient {
     status?: string;
     risk_notes?: string;
     next_steps?: string;
+    type?: string;
+    metadata?: any;
   }): Promise<{ ok: boolean; item: IdeaCard }> {
     return this.fetchWithAuth('/api/idea-cards', {
       method: 'POST',

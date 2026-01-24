@@ -89,6 +89,8 @@ async function ensureSchema() {
         status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'active', 'archived', 'tested', 'validated', 'killed')),
         risk_notes TEXT NOT NULL DEFAULT '',
         next_steps TEXT NOT NULL DEFAULT '',
+        type TEXT NOT NULL DEFAULT 'text-note',
+        metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
