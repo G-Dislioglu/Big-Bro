@@ -93,7 +93,7 @@ export function IdeaLab({ adminKey }: IdeaLabProps) {
       fetchCards()
       setError('')
     } catch (err: any) {
-      setError(err.message)
+      alert(err.message)
     }
   }
 

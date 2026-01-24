@@ -96,6 +96,10 @@ async function ensureSchema() {
       )
     `);
 
+    // Ensure new columns exist (for existing tables)
+    await db.query(`ALTER TABLE idea_cards ADD COLUMN IF NOT EXISTS type TEXT DEFAULT 'text-note'`);
+    await db.query(`ALTER TABLE idea_cards ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb`);
+
     const statusConstraints = await db.query(
       `SELECT con.conname
        FROM pg_constraint con
