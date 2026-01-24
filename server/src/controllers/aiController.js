@@ -1,7 +1,7 @@
 const OpenAI = require('openai');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
-async function generateIdeaCard(text, provider) {
+async function generateIdea(text, provider) {
   const systemPrompt = `You are an AI assistant that generates structured idea cards from user input text. Return only valid JSON with the following structure: { "title": "string", "description": "string", "tags": ["array", "of", "strings"], "type": "string", "metadata": {} }. Do not include any other text or explanation.`;
 
   switch (provider) {
@@ -58,4 +58,4 @@ async function generateIdeaCard(text, provider) {
   }
 }
 
-module.exports = { generateIdeaCard };
+module.exports = { generateIdea };
