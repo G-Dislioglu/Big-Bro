@@ -303,6 +303,7 @@ export function IdeaLab({ adminKey }: IdeaLabProps) {
               onClick={() => selectCard(card)}
             >
               <h4>{card.title}</h4>
+              {card.body && <p className="idea-card-body">{card.body}</p>}
               <div className="idea-card-meta">
                 <span className={`badge layer-${card.layer.toLowerCase()}`}>{card.layer}</span>
                 <span className={`badge status-${card.status}`}>{card.status}</span>
