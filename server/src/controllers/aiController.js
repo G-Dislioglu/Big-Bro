@@ -15,13 +15,13 @@ const generateIdea = async (req, res) => {
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         const model = genAI.getGenerativeModel({ model: "gemini-pro"});
         
+        // KORREKTUR: Keine Backticks im String verwenden!
         const prompt = `Du bist ein Strategie-Experte. Erstelle eine detaillierte Strategie für: "${text}".
-        Antworte NUR mit reinem JSON (ohne Markdown ```json tags).
+        Antworte NUR mit reinem JSON. Bitte keine Markdown-Formatierung nutzen.
         Format: { "title": "...", "description": "...", "type": "strategy", "tags": ["Gemini", "Strategy"], "metadata": { "position": { "x": 0, "y": 0 } } }`;
         
         const result = await model.generateContent(prompt);
         const textResponse = result.response.text();
-        // Clean Markdown if present
         const cleanJson = textResponse.replace(/```json/g, '').replace(/```/g, '');
         jsonResult = JSON.parse(cleanJson);
     } 
@@ -30,7 +30,7 @@ const generateIdea = async (req, res) => {
     else {
         let apiKey = process.env.OPENAI_API_KEY;
         let baseURL = undefined; 
-        let modelName = 'gpt-4o'; // Standard OpenAI
+        let modelName = 'gpt-4o'; 
 
         if (provider === 'deepseek') {
             apiKey = process.env.DEEPSEEK_API_KEY;
@@ -65,7 +65,7 @@ const generateIdea = async (req, res) => {
   } catch (error) {
     console.error('AI Error:', error);
     res.status(500).json({ 
-        title: "AI Connection Error", 
+        title: "AI Error", 
         description: error.message, 
         type: "error", 
         metadata: { position: { x: 0, y: 0 } } 
