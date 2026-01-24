@@ -4,6 +4,8 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 
+require('dotenv').config();
+
 const config = require('./config');
 const { ensureSchema } = require('./db');
 const rateLimitMiddleware = require('./middleware/rateLimit');
