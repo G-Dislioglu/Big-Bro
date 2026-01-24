@@ -18,6 +18,10 @@ export function IdeaLab({ adminKey }: IdeaLabProps) {
   
   const [showImport, setShowImport] = useState(false)
   const [jsonText, setJsonText] = useState('')
+
+  const [showAiModal, setShowAiModal] = useState(false)
+  const [aiText, setAiText] = useState('')
+  const [aiProvider, setAiProvider] = useState('openai')
   
   // Filters
   const [searchQ, setSearchQ] = useState('')
@@ -92,6 +96,29 @@ export function IdeaLab({ adminKey }: IdeaLabProps) {
       setShowImport(false)
       fetchCards()
       setError('')
+    } catch (err: any) {
+      alert(err.message)
+    }
+  }
+
+  const handleAiGenerate = async () => {
+    if (!canWrite) {
+      setError('Admin-Key nötig')
+      return
+    }
+    try {
+      const data = await api.aiGenerate({ text: aiText, provider: aiProvider })
+      await api.createIdeaCard({
+        title: data.title,
+        body: data.description,
+        tags: data.tags,
+        layer: 'Rational',
+        type: data.type,
+        metadata: data.metadata
+      })
+      setAiText('')
+      setShowAiModal(false)
+      fetchCards()
     } catch (err: any) {
       alert(err.message)
     }
@@ -273,6 +300,7 @@ export function IdeaLab({ adminKey }: IdeaLabProps) {
           <button onClick={handleSearch}>Search</button>
           <button onClick={() => openEditor()} disabled={!canWrite}>New Card</button>
           <button onClick={() => setShowImport(!showImport)}>Import JSON</button>
+          <button onClick={() => setShowAiModal(true)}>AI Magic</button>
         </div>
         {!canWrite && <p className="no-tasks">Read-only mode. Enter Admin-Key to write.</p>}
         {showImport && (
@@ -285,6 +313,26 @@ export function IdeaLab({ adminKey }: IdeaLabProps) {
               style={{ width: '100%', marginTop: '10px' }}
             />
             <button onClick={handleImport} style={{ marginTop: '10px' }}>Import</button>
+          </div>
+        )}
+        {showAiModal && (
+          <div>
+            <h3>AI Command Center</h3>
+            <textarea
+              value={aiText}
+              onChange={(e) => setAiText(e.target.value)}
+              placeholder="Describe your idea..."
+              rows={5}
+              style={{ width: '100%', marginTop: '10px' }}
+            />
+            <select value={aiProvider} onChange={(e) => setAiProvider(e.target.value)}>
+              <option value="openai">OpenAI</option>
+              <option value="deepseek">DeepSeek</option>
+              <option value="grok">Grok</option>
+              <option value="gemini">Gemini</option>
+            </select>
+            <button onClick={handleAiGenerate} style={{ marginTop: '10px' }}>Generate Idea</button>
+            <button onClick={() => setShowAiModal(false)}>Cancel</button>
           </div>
         )}
       </div>

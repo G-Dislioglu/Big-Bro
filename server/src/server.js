@@ -19,6 +19,7 @@ const crossingRouter = require('./routes/crossing');
 const buildInfoRouter = require('./routes/build-info');
 const ideaCardsRouter = require('./routes/idea-cards');
 const ideaLinksRouter = require('./routes/idea-links');
+const aiRouter = require('./routes/ai');
 
 const app = express();
 
@@ -50,6 +51,7 @@ app.use('/api/card-links', cardLinksRouter);
 app.use('/api/crossing', crossingRouter);
 app.use('/api/idea-cards', ideaCardsRouter);
 app.use('/api/links', ideaLinksRouter);
+app.use('/api/ai', aiRouter);
 
 const serverPublicPath = path.join(__dirname, '../public');
 const monorepoClientDistPath = path.join(__dirname, '../../client/dist');

@@ -319,6 +319,14 @@ class ApiClient {
       body: JSON.stringify(params),
     });
   }
+
+  // AI Generation
+  async aiGenerate(data: { text: string; provider: string; mode?: string }): Promise<{ title: string; description: string; tags: string[]; type: string; metadata: any }> {
+    return this.fetchWithAuth('/api/ai/generate', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
 }
 
 export const api = new ApiClient();
