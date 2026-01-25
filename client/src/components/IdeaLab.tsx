@@ -22,6 +22,8 @@ export function IdeaLab({ adminKey }: IdeaLabProps) {
   const [showAiModal, setShowAiModal] = useState(false)
   const [aiText, setAiText] = useState('')
   const [aiProvider, setAiProvider] = useState('openai')
+  const [isSwarmLoading, setIsSwarmLoading] = useState(false)
+  const [swarmButtonText, setSwarmButtonText] = useState('🚀 Launch Scout Swarm')
   
   // Filters
   const [searchQ, setSearchQ] = useState('')
@@ -121,6 +123,27 @@ export function IdeaLab({ adminKey }: IdeaLabProps) {
       fetchCards()
     } catch (err: any) {
       alert(err.message)
+    }
+  }
+
+  const handleScoutSwarm = async () => {
+    if (!canWrite) {
+      setError('Admin-Key nötig')
+      return
+    }
+    try {
+      setIsSwarmLoading(true)
+      setSwarmButtonText('Scouts analyzing...')
+      const newCards = await api.aiSwarm({ text: aiText })
+      setCards(prev => [...newCards, ...prev])
+      setAiText('')
+      setShowAiModal(false)
+      fetchCards()
+    } catch (err: any) {
+      alert(err.message)
+    } finally {
+      setIsSwarmLoading(false)
+      setSwarmButtonText('🚀 Launch Scout Swarm')
     }
   }
 
@@ -332,6 +355,7 @@ export function IdeaLab({ adminKey }: IdeaLabProps) {
               <option value="gemini">Gemini</option>
             </select>
             <button onClick={handleAiGenerate} style={{ marginTop: '10px' }}>Generate Idea</button>
+            <button onClick={handleScoutSwarm} disabled={isSwarmLoading} style={{ marginTop: '10px', backgroundColor: 'purple', color: 'white', border: 'none', padding: '10px', borderRadius: '5px' }}>{swarmButtonText}</button>
             <button onClick={() => setShowAiModal(false)}>Cancel</button>
           </div>
         )}

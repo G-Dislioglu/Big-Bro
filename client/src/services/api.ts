@@ -327,6 +327,13 @@ class ApiClient {
       body: JSON.stringify(data),
     });
   }
+
+  async aiSwarm(data: { text: string }): Promise<IdeaCard[]> {
+    return this.fetchWithAuth('/api/ai/swarm', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
 }
 
 export const api = new ApiClient();
