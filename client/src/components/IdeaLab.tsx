@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api, IdeaCard, IdeaCardLink } from '../services/api'
+import '../styles/ethereal-glass.css'
 
 interface IdeaLabProps {
   adminKey: string
@@ -339,39 +340,45 @@ export function IdeaLab({ adminKey }: IdeaLabProps) {
           </div>
         )}
         {showAiModal && (
-          <div>
-            <h3>AI Command Center</h3>
+          <div className="glass-card glass-cyan gradient-border-animated">
+            <h3 className="glass-text-primary text-xl font-semibold mb-4">AI Command Center</h3>
             <textarea
+              className="glass-input glass-text-primary w-full"
               value={aiText}
               onChange={(e) => setAiText(e.target.value)}
               placeholder="Describe your idea..."
               rows={5}
-              style={{ width: '100%', marginTop: '10px' }}
             />
-            <select value={aiProvider} onChange={(e) => setAiProvider(e.target.value)}>
-              <option value="openai">OpenAI</option>
-              <option value="deepseek">DeepSeek</option>
-              <option value="grok">Grok</option>
-              <option value="gemini">Gemini</option>
+            <select className="glass-input glass-text-primary w-full mt-4" value={aiProvider} onChange={(e) => setAiProvider(e.target.value)}>
+              <option value="openai">OpenAI GPT-4o (Standard)</option>
+              <option value="openai-reasoning">OpenAI o1 (Reasoning)</option>
+              <option value="deepseek">DeepSeek V3 (Fast)</option>
+              <option value="deepseek-reasoner">DeepSeek R1 (Deep Thinker)</option>
+              <option value="grok">Grok 2 (Fun Mode)</option>
+              <option value="gemini">Google Gemini 1.5 Pro</option>
+              <option value="gemini-flash">Google Gemini Flash (Speed)</option>
             </select>
-            <button onClick={handleAiGenerate} style={{ marginTop: '10px' }}>Generate Idea</button>
-            <button onClick={handleScoutSwarm} disabled={isSwarmLoading} style={{ marginTop: '10px', backgroundColor: 'purple', color: 'white', border: 'none', padding: '10px', borderRadius: '5px' }}>{swarmButtonText}</button>
-            <button onClick={() => setShowAiModal(false)}>Cancel</button>
+            <div className="flex flex-wrap gap-4 mt-6 items-center">
+              <button className="glass-button glass-blue breathe-cyan" onClick={handleAiGenerate}>Generate Idea</button>
+              <button className="glass-button glass-purple breathe-cyan" onClick={handleScoutSwarm} disabled={isSwarmLoading}>{swarmButtonText}</button>
+              <button className="glass-button" onClick={() => setShowAiModal(false)}>Cancel</button>
+            </div>
           </div>
         )}
       </div>
 
       {/* Cards List */}
-      <div className="card">
-        <h3>Cards ({total})</h3>
-        {loading && <p>Loading...</p>}
-        {!loading && cards.length === 0 && <p>No cards found. Create your first idea!</p>}
+      <div className="glass-card glass-base">
+        <h3 className="glass-text-primary text-lg font-semibold">Cards ({total})</h3>
+        <div className="gradient-divider"></div>
+        {loading && <p className="glass-text-secondary loading-pulse">Loading...</p>}
+        {!loading && cards.length === 0 && <p className="glass-text-muted">No cards found. Create your first idea!</p>}
         
         <div className="idea-cards-grid">
           {cards.map(card => (
             <div 
               key={card.id} 
-              className={`idea-card-item ${selectedCard?.id === card.id ? 'selected' : ''}`}
+              className={`idea-card-item glass-card glass-base float-animation ${selectedCard?.id === card.id ? 'glass-cyan' : ''}`}
               onClick={() => selectCard(card)}
             >
               <h4>{card.title}</h4>

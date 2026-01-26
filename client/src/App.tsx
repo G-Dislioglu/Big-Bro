@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import './App.css'
+import './styles/ethereal-glass.css'
 import { api, HealthResponse, Task } from './services/api'
 import { IdeaLab } from './components/IdeaLab'
 import { StrategyLab } from './components/StrategyLab'
+import { AmbientBackground, LoadingPulse } from './components/EtherealComponents'
 
 function App() {
   const [adminKey, setAdminKey] = useState(() => {
@@ -19,7 +21,7 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [authenticated, setAuthenticated] = useState(false)
 
-  const [currentView, setCurrentView] = useState<'tasks' | 'cards' | 'ideas'>('tasks')
+  const [currentView, setCurrentView] = useState<'tasks' | 'cards' | 'ideas'>('ideas')
 
   // Check health on mount
   useEffect(() => {
@@ -130,161 +132,176 @@ function App() {
   }
 
   return (
-    <div className="app">
-      <div className="container">
-        <h1>Big-Bro v0.2</h1>
-        
-        {/* Health Status */}
-        <div className="card">
-          <h2>System Health</h2>
-          {health ? (
-            <div className="health-info">
-              <div className="health-item">
-                <span className="label">Status:</span>
-                <span className={`status ${health.ok ? 'ok' : 'error'}`}>
-                  {health.ok ? 'OK' : 'ERROR'}
-                </span>
+    <>
+      <AmbientBackground />
+      <div className="min-h-screen bg-slate-900 relative z-10">
+        <div className="container mx-auto px-4 py-8">
+          <header className="mb-8">
+            <h1 className="text-3xl font-bold text-white mb-4">Big-Bro</h1>
+            <div className="flex gap-4 flex-wrap">
+              <button 
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  currentView === 'tasks' 
+                    ? 'bg-blue-600 text-white shadow-lg' 
+                    : 'bg-slate-700 text-gray-300 hover:bg-slate-600'
+                }`}
+                onClick={() => setCurrentView('tasks')}
+              >
+                Tasks
+              </button>
+              <button 
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  currentView === 'cards' 
+                    ? 'bg-blue-600 text-white shadow-lg' 
+                    : 'bg-slate-700 text-gray-300 hover:bg-slate-600'
+                }`}
+                onClick={() => setCurrentView('cards')}
+              >
+                Strategy Lab
+              </button>
+              <button 
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  currentView === 'ideas' 
+                    ? 'bg-blue-600 text-white shadow-lg' 
+                    : 'bg-slate-700 text-gray-300 hover:bg-slate-600'
+                }`}
+                onClick={() => setCurrentView('ideas')}
+                disabled={!authenticated}
+              >
+                Idea Lab
+              </button>
+            </div>
+          </header>
+
+          {/* Health Status */}
+          {health && (
+            <div className="mb-6 p-4 bg-slate-800 rounded-lg border border-slate-700">
+              <h2 className="text-lg font-semibold text-white mb-2">System Status</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div>
+                  <span className="text-gray-400">Database:</span>
+                  <span className={`ml-2 font-medium ${health.db ? 'text-green-400' : 'text-red-400'}`}>
+                    {health.db ? 'Connected' : 'Error'}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-400">Version:</span>
+                  <span className="ml-2 text-gray-300">{health.version}</span>
+                </div>
+                <div>
+                  <span className="text-gray-400">Uptime:</span>
+                  <span className="ml-2 text-gray-300">{health.time}s</span>
+                </div>
               </div>
-              <div className="health-item">
-                <span className="label">Service:</span>
-                <span>{health.service}</span>
-              </div>
-              <div className="health-item">
-                <span className="label">Version:</span>
-                <span>{health.version}</span>
-              </div>
-              <div className="health-item">
-                <span className="label">Database:</span>
-                <span className={`status ${health.db.configured ? (health.db.ok ? 'ok' : 'warning') : 'warning'}`}>
-                  {health.db.configured ? (health.db.ok ? 'Connected' : 'Error') : 'Not Configured'}
-                </span>
-              </div>
-              <div className="health-item">
-                <span className="label">Time:</span>
-                <span className="timestamp">{new Date(health.time).toLocaleString()}</span>
+            </div>
+          )}
+
+          {/* Authentication */}
+          {!authenticated ? (
+            <div className="glass-card glass-base max-w-md mx-auto">
+              <h2 className="text-xl font-semibold glass-text-primary mb-4">Authentication</h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="block glass-text-secondary text-sm font-medium mb-2">
+                    Admin Key
+                  </label>
+                  <input
+                    type="password"
+                    className="glass-input glass-text-primary w-full"
+                    value={adminKey}
+                    onChange={(e) => setAdminKey(e.target.value)}
+                    placeholder="Enter admin key"
+                  />
+                </div>
+                <button
+                  className="glass-button glass-blue w-full"
+                  onClick={checkAuth}
+                  disabled={loading}
+                >
+                  {loading ? 'Checking...' : 'Login'}
+                </button>
+                {error && (
+                  <p className="text-red-400 text-sm">{error}</p>
+                )}
               </div>
             </div>
           ) : (
-            <p>Loading...</p>
-          )}
-        </div>
-
-        {/* Authentication */}
-        <div className="card">
-          <h2>Authentication</h2>
-          <div className="auth-form">
-            <input
-              type="password"
-              placeholder="Enter admin key (x-admin-key)"
-              value={adminKey}
-              onChange={(e) => setAdminKey(e.target.value)}
-              className="admin-key-input"
-            />
-            <button onClick={checkAuth} disabled={loading || !adminKey}>
-              {authenticated ? 'Authenticated ✓' : 'Check Authentication'}
-            </button>
-          </div>
-          {authenticated && (
-            <p className="success">Successfully authenticated!</p>
-          )}
-        </div>
-
-        {/* View Selector */}
-        <div className="card">
-          <div className="view-selector">
-            <button 
-              className={`bg-blue-500 text-white ${currentView === 'tasks' ? 'active' : ''}`} 
-              onClick={() => setCurrentView('tasks')}
-              disabled={!authenticated}
-            >
-              Tasks
-            </button>
-            <button 
-              className={currentView === 'cards' ? 'active' : ''} 
-              style={{ backgroundColor: '#3B82F6', color: 'white', padding: '10px 20px', borderRadius: '5px', border: 'none', cursor: 'pointer' }}
-              onClick={() => setCurrentView('cards')}
-            >
-              Strategy Lab
-            </button>
-            <button 
-              className={currentView === 'ideas' ? 'active' : ''} 
-              style={{ backgroundColor: '#3B82F6', color: 'white', padding: '10px 20px', borderRadius: '5px', border: 'none', cursor: 'pointer' }}
-              onClick={() => setCurrentView('ideas')}
-              disabled={!authenticated}
-            >
-              Idea Lab
-            </button>
-          </div>
-        </div>
-
-        {/* Error Message */}
-        {error && <p className="error">{error}</p>}
-
-        {/* Tasks Section */}
-        {authenticated && currentView === 'tasks' && (
-          <div className="card">
-            <h2>Tasks</h2>
-            
-            {/* Add Task Form */}
-            <form onSubmit={addTask} className="add-task-form">
-              <input
-                type="text"
-                placeholder="Enter new task title"
-                value={newTaskTitle}
-                onChange={(e) => setNewTaskTitle(e.target.value)}
-                disabled={loading}
-              />
-              <button type="submit" disabled={loading || !newTaskTitle.trim()}>
-                Add Task
-              </button>
-            </form>
-
-            {/* Tasks List */}
-            {loading && <p>Loading...</p>}
-            
-            {!loading && tasks.length === 0 && (
-              <p className="no-tasks">No tasks yet. Add your first task above!</p>
-            )}
-            
-            {!loading && tasks.length > 0 && (
-              <div className="tasks-list">
-                {tasks.map((task) => (
-                  <div key={task.id} className="task-item">
-                    <div className="task-content">
-                      <h3>{task.title}</h3>
-                      <p className="task-meta">
-                        Created: {new Date(task.created_at).toLocaleString()}
-                      </p>
-                    </div>
-                    <div className="task-status">
-                      <select
-                        value={task.status}
-                        onChange={(e) => updateTaskStatus(task.id, e.target.value)}
-                        disabled={loading}
+            <div className="space-y-8">
+              {/* Tasks Section */}
+              {currentView === 'tasks' && (
+                <div className="glass-card glass-base">
+                  <h2 className="text-xl font-semibold glass-text-primary mb-4">Tasks</h2>
+                  
+                  <div className="mb-6">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        className="glass-input glass-text-primary flex-1"
+                        value={newTaskTitle}
+                        onChange={(e) => setNewTaskTitle(e.target.value)}
+                        placeholder="New task title..."
+                        onKeyPress={(e) => e.key === 'Enter' && addTask(e)}
+                      />
+                      <button
+                        className="glass-button glass-cyan"
+                        onClick={addTask}
+                        disabled={loading || !newTaskTitle.trim()}
                       >
-                        <option value="todo">To Do</option>
-                        <option value="doing">Doing</option>
-                        <option value="done">Done</option>
-                      </select>
+                        Add Task
+                      </button>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+                  
+                  {loading && <LoadingPulse />}
+                  {!loading && tasks.length === 0 && (
+                    <p className="glass-text-muted">No tasks yet. Create your first task!</p>
+                  )}
+                  
+                  {!loading && tasks.length > 0 && (
+                    <div className="space-y-2">
+                      {tasks.map((task) => (
+                        <div key={task.id} className="glass-card glass-base">
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <h3 className="glass-text-primary font-medium">{task.title}</h3>
+                              <p className="glass-text-secondary text-sm">
+                                Created: {new Date(task.created_at).toLocaleString()}
+                              </p>
+                            </div>
+                            <div>
+                              <select
+                                className="glass-input glass-text-primary text-sm"
+                                value={task.status}
+                                onChange={(e) => updateTaskStatus(task.id, e.target.value)}
+                                disabled={loading}
+                              >
+                                <option value="todo">To Do</option>
+                                <option value="doing">Doing</option>
+                                <option value="done">Done</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
-        {/* Strategy Lab Section */}
-        {currentView === 'cards' && (
-          <StrategyLab adminKey={adminKey} />
-        )}
+              {/* Strategy Lab Section */}
+              {currentView === 'cards' && (
+                <StrategyLab adminKey={adminKey} />
+              )}
 
-        {/* Idea Lab Section (PR-2) */}
-        {authenticated && currentView === 'ideas' && (
-          <IdeaLab adminKey={adminKey} />
-        )}
+              {/* Idea Lab Section (PR-2) */}
+              {currentView === 'ideas' && (
+                <IdeaLab adminKey={adminKey} />
+              )}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 

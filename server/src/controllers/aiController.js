@@ -9,11 +9,12 @@ const generateIdea = async (req, res) => {
     let jsonResult;
 
     // --- STRATEGIE: GOOGLE GEMINI ---
-    if (provider === 'gemini') {
+    if (provider === 'gemini' || provider === 'gemini-flash') {
+        const modelName = provider === 'gemini-flash' ? 'gemini-1.5-flash' : 'gemini-1.5-pro';
         if (!process.env.GEMINI_API_KEY) throw new Error("Gemini Key missing");
         
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-pro"});
+        const model = genAI.getGenerativeModel({ model: modelName });
         
         // KORREKTUR: Keine Backticks im String verwenden!
         const prompt = `Du bist ein Strategie-Experte. Erstelle eine detaillierte Strategie für: "${text}".
@@ -30,12 +31,20 @@ const generateIdea = async (req, res) => {
     else {
         let apiKey = process.env.OPENAI_API_KEY;
         let baseURL = undefined; 
-        let modelName = 'gpt-4o'; 
+        let modelName = 'gpt-4o'; // Standard OpenAI
 
-        if (provider === 'deepseek') {
+        if (provider === 'openai-reasoning') {
+            apiKey = process.env.OPENAI_API_KEY;
+            baseURL = undefined;
+            modelName = 'o1';
+        } else if (provider === 'deepseek') {
             apiKey = process.env.DEEPSEEK_API_KEY;
             baseURL = 'https://api.deepseek.com';
             modelName = 'deepseek-chat';
+        } else if (provider === 'deepseek-reasoner') {
+            apiKey = process.env.DEEPSEEK_API_KEY;
+            baseURL = 'https://api.deepseek.com';
+            modelName = 'deepseek-r1';
         } else if (provider === 'grok') {
             apiKey = process.env.GROK_API_KEY;
             baseURL = 'https://api.x.ai/v1'; 
@@ -102,7 +111,7 @@ const runScoutSwarm = async (req, res) => {
             { role: "system", content: "Du bist der Risiko-Scout. Finde Sicherheitslücken, Denkfehler und Risiken. Antworte NUR mit validem JSON. Schema: { title, description, type, tags: [], metadata: {} }" },
             { role: "user", content: `Analysiere Risiken für: ${text}` }
           ],
-          model: 'deepseek-chat',
+          model: 'deepseek-r1',
           response_format: { type: "json_object" }
         });
         const jsonResult = JSON.parse(completion.choices[0].message.content);
@@ -123,7 +132,7 @@ const runScoutSwarm = async (req, res) => {
             { role: "system", content: "Du bist der Architekt. Erstelle eine saubere Gliederung und Schritte zur Umsetzung. Antworte NUR mit validem JSON. Schema: { title, description, type, tags: [], metadata: {} }" },
             { role: "user", content: `Erstelle Struktur für: ${text}` }
           ],
-          model: 'gpt-4o-mini',
+          model: 'o1',
           response_format: { type: "json_object" }
         });
         const jsonResult = JSON.parse(completion.choices[0].message.content);
